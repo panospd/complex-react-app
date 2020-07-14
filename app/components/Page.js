@@ -5,7 +5,7 @@ export default function Page({ title, wide, children }) {
   useEffect(() => {
     document.title = `${title} | ComplexApp`;
     window.scrollTo(0, 0);
-  }, []);
+  }, [title]);
 
   return <Container wide={wide}>{children}</Container>;
 }
