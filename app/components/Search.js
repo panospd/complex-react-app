@@ -5,6 +5,7 @@ import { useImmer } from "use-immer";
 import axios from "axios";
 
 import DispatchContext from "../DispatchContext";
+import Post from "./Post";
 
 export default function Search() {
   const [state, setState] = useImmer({
@@ -136,24 +137,12 @@ export default function Search() {
                   {state.results.length === 1 ? "item" : "items"} found)
                 </div>
                 {state.results.map(post => {
-                  const date = new Date(post.createdDate);
-                  const dateFormatted = `${
-                    date.getMonth() + 1
-                  }/${date.getDate()}/${date.getFullYear()}`;
-
                   return (
-                    <Link
-                      onClick={() => appDispatch({ type: "closeSearch" })}
+                    <Post
                       key={post._id}
-                      to={`/post/${post._id}`}
-                      className="list-group-item list-group-item-action"
-                    >
-                      <img className="avatar-tiny" src={post.author.avatar} />
-                      {post.title} <strong></strong>
-                      <span className="text-muted small">
-                        by {post.author.username} on {dateFormatted}{" "}
-                      </span>
-                    </Link>
+                      post={post}
+                      onClick={() => appDispatch({ type: "closeSearch" })}
+                    />
                   );
                 })}
               </div>
