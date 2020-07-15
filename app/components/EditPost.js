@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link, withRouter } from "react-router-dom";
 
 import axios from "axios";
 
@@ -8,8 +8,9 @@ import LoadingDotsIcon from "./LoadingDotsIcon";
 import { useImmerReducer } from "use-immer";
 import StateContext from "../StateContext";
 import DispatchContext from "../DispatchContext";
+import NotFound from "./NotFound";
 
-export default function ViewSinglePost() {
+function EditPost(props) {
   const appState = useContext(StateContext);
   const appDispatch = useContext(DispatchContext);
 
@@ -28,6 +29,7 @@ export default function ViewSinglePost() {
     isSaving: false,
     id: useParams().id,
     sendCount: 0,
+    notFound: false,
   };
 
   function ourReducer(draft, action) {
@@ -71,6 +73,9 @@ export default function ViewSinglePost() {
           draft.body.hasErrors = true;
           draft.body.message = "You must provide body content.";
         }
+        return;
+      case "notFound":
+        draft.notFound = true;
     }
   }
 
@@ -92,7 +97,21 @@ export default function ViewSinglePost() {
         const response = await axios.get(`/post/${state.id}`, {
           cancelToken: ourRequest.token,
         });
-        dispatch({ type: "fetchComplete", value: response.data });
+
+        if (response.data) {
+          dispatch({ type: "fetchComplete", value: response.data });
+
+          if (appState.user.username !== response.data.author.username) {
+            appDispatch({
+              type: "flashMessage",
+              value: "You do not have permission to edit that post.",
+            });
+
+            props.history.push("/");
+          }
+        } else {
+          dispatch({ type: "notFound" });
+        }
       } catch (e) {
         console.log(e.response.data);
       }
@@ -108,7 +127,7 @@ export default function ViewSinglePost() {
       dispatch({ type: "saveRequestStarted" });
       const ourRequest = axios.CancelToken.source();
 
-      (async function fetchPost() {
+      (async function savePost() {
         try {
           await axios.post(
             `/post/${state.id}/edit`,
@@ -135,6 +154,8 @@ export default function ViewSinglePost() {
     }
   }, [state.sendCount]);
 
+  if (state.notFound) return <NotFound />;
+
   if (state.isFetching)
     return (
       <Page title="...">
@@ -144,7 +165,10 @@ export default function ViewSinglePost() {
 
   return (
     <Page title="Edit Post">
-      <form onSubmit={submitHandler}>
+      <Link className="small font-weight-bold" to={`/post/${state.id}`}>
+        &laquo; Back to view
+      </Link>
+      <form className="mt-3" onSubmit={submitHandler}>
         <div className="form-group">
           <label htmlFor="post-title" className="text-muted mb-1">
             <small>Title</small>
@@ -201,3 +225,5 @@ export default function ViewSinglePost() {
     </Page>
   );
 }
+
+export default withRouter(EditPost);
