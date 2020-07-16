@@ -5,7 +5,8 @@ import { CSSTransition } from "react-transition-group";
 
 import axios from "axios";
 
-axios.defaults.baseURL = "http://localhost:8080";
+console.log("BASE URL", process.env.BACKENDURL);
+axios.defaults.baseURL = process.env.BACKENDURL || "";
 
 import Statecontext from "./StateContext";
 import DispatchContext from "./DispatchContext";
