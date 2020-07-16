@@ -30,12 +30,20 @@ export default function HeaderLoggedIn() {
       </a>
       <ReactTooltip place="bottom" className="custom-tooltip" id="search" />{" "}
       <span
-        className="mr-2 header-chat-icon text-white"
+        className={
+          "mr-2 header-chat-icon " +
+          (appState.unreadChatCount ? "text-danger" : "text-white")
+        }
         data-for="chat"
         data-tip="Chat"
+        onClick={() => appDispatch({ type: "toggleChat" })}
       >
         <i className="fas fa-comment"></i>
-        <span className="chat-count-badge text-white"> </span>
+        {appState.unreadChatCount > 0 && (
+          <span className="chat-count-badge text-white">
+            {appState.unreadChatCount < 10 ? appState.unreadChatCount : "9+"}
+          </span>
+        )}
       </span>
       <ReactTooltip place="bottom" className="custom-tooltip" id="chat" />{" "}
       <Link
