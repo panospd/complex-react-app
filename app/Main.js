@@ -87,6 +87,38 @@ function Main() {
     }
   }, [state.loggedIn]);
 
+  useEffect(() => {
+    if (state.loggedIn) {
+      const cancelTokenSource = axios.CancelToken.source();
+
+      (async function checkToken() {
+        try {
+          const response = await axios.post(
+            "/checkToken",
+            {
+              token: state.user.token,
+            },
+            {
+              CancelToken: cancelTokenSource.token,
+            }
+          );
+
+          if (!response.data) {
+            dispatch({ type: "logout" });
+            dispatch({
+              type: "flashMessage",
+              value: "Your session has expired. Please login again.",
+            });
+          }
+        } catch (error) {}
+      })();
+
+      return () => {
+        cancelTokenSource.cancel();
+      };
+    }
+  }, []);
+
   return (
     <Statecontext.Provider value={state}>
       <DispatchContext.Provider value={dispatch}>
